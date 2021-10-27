@@ -19,6 +19,28 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	/**  Called for forwards/backwards input*/
+	void MoveForward(float Value);
+	/** Called for side to side input*/
+	void MoveRight(float Value);
+
+	/**
+	 * Called via input to turn at a given rate.
+	 * @param Rate This is a normalized rate, if.e. 1.0 means 100% of desired turn rate
+	 */
+	
+	void TurnAtRate(float Rate);
+
+	/**
+	 *Called via input to look up/down at a given rate.
+	 * #param Rate This is a normalized rate, i.e. 1.0 means 100% of desired rate
+	 */
+	
+	void LookUpAtRate(float Rate);
+
+	/** Called when the Fire Button is pressed*/
+	void FireWeapon();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -26,15 +48,34 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+#pragma region Components
 private:
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+#pragma endregion  Components
+	
+	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float BaseTurnRate;
+	//** Base look up/down rate, in deg/sec. Other scaling may affect final turn rate */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float BaseLookUpRate;
+	
+	/** Randomized gunshot sound cue*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class USoundCue* FireSound;
+	/** Flash spawned at BarrelSocket*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class UParticleSystem* MuzzleFlash;
+	/**	Montage for a firing a weapon*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* HipFireMontage;
 	
 public:
-	/** Getter with const only returns CameraBoom subobject */
+	/** Getter with const only returns CameraBoom Subobject */
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const {return CameraBoom;}
 	/** Returns FollowCamera subobject */	
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
