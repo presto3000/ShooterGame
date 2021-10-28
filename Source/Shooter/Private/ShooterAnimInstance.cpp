@@ -2,6 +2,8 @@
 
 
 #include "ShooterAnimInstance.h"
+
+#include "AITypes.h"
 #include "ShooterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -52,6 +54,10 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		//{
 		//	GEngine->AddOnScreenDebugMessage(1, 0.f, FColor::White, OffsetMessage);
 		//}
+		if(ShooterCharacter->GetVelocity().Size() > 0.f)
+		{
+			LastMovementOffsetYaw = MovementOffsetYaw;
+		}
 	}
 	
 }
