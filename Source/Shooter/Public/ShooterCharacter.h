@@ -75,6 +75,9 @@ protected:
 
 	UFUNCTION()
 	void AutoFireReset();
+
+	/** Line trace for item under the crosshairs */
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult);
 	
 public:	
 	// Called every frame

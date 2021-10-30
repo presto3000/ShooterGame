@@ -4,9 +4,11 @@
 
 #include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Items/Item.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
@@ -482,6 +484,40 @@ void AShooterCharacter::AutoFireReset()
 	}
 }
 
+bool AShooterCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult)
+{
+	// Get Viewport Size
+	FVector2D ViewportSize;
+	if(GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+	// Get screen space location of crosshairs
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+	//CrosshairLocation.Y -= 50.f;
+
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+	// Get World position and direction of crosshairs
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection);
+
+	if(bScreenToWorld)
+	{
+		// Trace from Crosshair world location outward
+		const FVector Start {CrosshairWorldPosition};
+		const FVector End {Start + CrosshairWorldDirection * 50000.f};
+		GetWorld()->LineTraceSingleByChannel(OutHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+		if(OutHitResult.bBlockingHit)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -493,6 +529,20 @@ void AShooterCharacter::Tick(float DeltaTime)
 	SetLookRates();
 	// Calculate crosshair spread multiplier
 	CalculateCrosshairSpread(DeltaTime);
+
+	// NOT EFFICIENT IN TICK LINE TRACE
+	////////////////////////////////////////////
+	FHitResult ItemTraceResult;
+	TraceUnderCrosshairs(ItemTraceResult);
+	if(ItemTraceResult.bBlockingHit)
+	{
+		AItem* HitItem = Cast<AItem>(ItemTraceResult.Actor);
+		if (HitItem && HitItem->GetPickupWidget())
+		{
+			// Show Item's Pickup Widget
+			HitItem->GetPickupWidget()->SetVisibility(true);
+		}
+	}
 }
 
 // Called to bind functionality to input
