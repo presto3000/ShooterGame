@@ -61,6 +61,8 @@ protected:
 	/** Set BaseTurn and BaseLookUpRate based on aiming */
 	void SetLookRates();
 
+	void CalculateCrosshairSpread(float DeltaTime);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -138,7 +140,7 @@ private:
 	/** Smoke trail for bullets*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* BeamParticles;
-#pragma endregion GunCombat	
+
 	/** True when aiming*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bAiming;
@@ -155,6 +157,28 @@ private:
 	/** Interp speed for zooming when aiming */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float ZoomInterpSpeed;
+#pragma endregion GunCombat
+#pragma region Crosshairs
+	/** Determines the spread of the corsshairs */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairSpreadMultiplier;
+
+	/** Veloctiy component for crosshairs spread*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairVelocityFactor;
+
+	/** InAir component for crosshairs spread*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairInAirFactor;
+
+	/** Aim component for crosshairs spread*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairAimFactor;
+
+	/** Shooting component for crosshairs spread*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairShootingFactor;
+#pragma endregion Crosshairs
 	
 public:
 	/** Getter with const only returns CameraBoom Subobject */
@@ -163,5 +187,7 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const {return FollowCamera;}
 
 	FORCEINLINE bool GetAiming() const {return bAiming;}
-	
+
+	UFUNCTION(BlueprintCallable)
+	float GetCrosshairSpreadMultiplier() const;
 };
