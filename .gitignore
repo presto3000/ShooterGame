@@ -72,3 +72,19 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+#Factory
+Content/Meshes/*
+
+#Factory
+Content/Materials/*
+
+#Factory
+Content/Textures/*
+
+#Factory
+Content/Audio/*
+
+
+#Factory
+Content/Fx/*
