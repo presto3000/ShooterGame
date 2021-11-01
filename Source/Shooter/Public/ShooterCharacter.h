@@ -96,6 +96,9 @@ protected:
 
 	void SelectButtonPressed();
 	void SelectButtonReleased();
+
+	/** Drops currently equipped Weapon and Equips TraceHitItem */
+	void SwapWeapon(AWeapon* WeaponToSwap);
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -120,11 +123,11 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
 	
-	/** Turn rate while not aiming*/	
+	/** Turn rate while not aiming */	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float HipTurnRate;
 	
-	/** Look up rate when not aiming*/
+	/** Look up rate when not aiming */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float HipLookUpRate;
 
@@ -249,6 +252,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
+	/** The item currently hit by our trace in TraceForItems (could be null) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItem;
 	
 #pragma endregion Crosshairs
 	
