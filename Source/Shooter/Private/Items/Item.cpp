@@ -132,8 +132,8 @@ void AItem::SetItemProperties(EItemState State)
 		case EItemState::EIS_Pickup:
 			// Set mesh properties
 			ItemMesh->SetSimulatePhysics(false);
-			ItemMesh->SetVisibility(true);
 			ItemMesh->SetEnableGravity(false);
+			ItemMesh->SetVisibility(true);
 			ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 			ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
@@ -151,8 +151,8 @@ void AItem::SetItemProperties(EItemState State)
 			PickupWidget->SetVisibility(false);
 			// Set mesh properties
 			ItemMesh->SetSimulatePhysics(false);
-			ItemMesh->SetVisibility(true);
 			ItemMesh->SetEnableGravity(false);
+			ItemMesh->SetVisibility(true);
 			ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 			ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			// Set AreaSphere properties
@@ -185,8 +185,8 @@ void AItem::SetItemProperties(EItemState State)
 			PickupWidget->SetVisibility(false);
 			// Set mesh properties
 			ItemMesh->SetSimulatePhysics(false);
-			ItemMesh->SetVisibility(true);
 			ItemMesh->SetEnableGravity(false);
+			ItemMesh->SetVisibility(true);
 			ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 			ItemMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			// Set AreaSphere properties
@@ -237,7 +237,7 @@ void AItem::FinishInterping()
 
 void AItem::ItemInterp(float DeltaTime)
 {
-	if(!bInterping) 
+	if(!bInterping) return;
 	{
 		if(Character && ItemZCurve)
 		{
