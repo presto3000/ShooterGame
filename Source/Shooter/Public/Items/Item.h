@@ -139,6 +139,18 @@ private:
 	/** Pointer to the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	class AShooterCharacter* Character;
+
+	/** X and Y for the Item while interping in the EquipInterping state */
+	float ItemInterpX;
+	float ItemInterpY;
+
+	/** Initial Yaw offset between the camera and the interping item */
+	float InterpInitialYawOffset;
+
+
+	/** Curve used to scale the item when interping */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* ItemScaleCurve;
 	
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;}
