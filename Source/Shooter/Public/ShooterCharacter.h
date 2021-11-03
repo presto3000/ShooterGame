@@ -9,6 +9,17 @@
 
 class AWeapon;
 
+UENUM(BlueprintType)
+enum class EAmmoType : uint8
+{
+	// AmmoType
+	EAT_9mm UMETA (DisplayName = "9am"),
+	EAT_AR UMETA (DisplayName = "Assault Rifle"),
+
+	EAT_MAX UMETA (DisplayName = "DefaultMAX"),
+	//Default 
+};
+
 UCLASS()
 class SHOOTER_API AShooterCharacter : public ACharacter
 {
@@ -99,6 +110,13 @@ protected:
 
 	/** Drops currently equipped Weapon and Equips TraceHitItem */
 	void SwapWeapon(AWeapon* WeaponToSwap);
+
+	/** Initialize the Ammo Map with ammo values */
+	void InitializeAmmoMap();
+
+	/** Check to make sure our weapon has ammo */
+	bool WeaponHasAmmo();
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -214,7 +232,7 @@ private:
 	/** Shooting component for crosshairs spread*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
 	float CrosshairShootingFactor;
-
+#pragma endregion Crosshairs
 	/** Left mouse button or right console trigger pressed*/
 	bool bFireButtonPressed;
 
@@ -230,7 +248,7 @@ private:
 	float ShootTimeDuration;
 	
 	bool bFiringBullet;
-	
+	/** Timer */
 	FTimerHandle CrosshairShootTimer;
 	//----------------
 
@@ -263,7 +281,19 @@ private:
 	/** Distance upward from the camera for the interp destination */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	float CameraInterpElevation;
-#pragma endregion Crosshairs
+
+	//----------//
+	/** Map to keep track of ammo of the different ammo types */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
+	TMap<EAmmoType, int32> AmmoMap;
+
+	/** Starting amount of 9mm ammo */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 Starting9mmAmmo;
+
+	/** Starting amount of AR ammo */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Items, meta = (AllowPrivateAccess = "true"))
+	int32 StartingARAmmo;
 	
 public:
 	/** Getter with const only returns CameraBoom Subobject */
