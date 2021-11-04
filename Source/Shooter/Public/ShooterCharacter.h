@@ -5,20 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Items/Weapon.h"
+#include "AmmoType.h"
 #include "ShooterCharacter.generated.h"
 
 class AWeapon;
 
-UENUM(BlueprintType)
-enum class EAmmoType : uint8
-{
-	// AmmoType
-	EAT_9mm UMETA (DisplayName = "9am"),
-	EAT_AR UMETA (DisplayName = "Assault Rifle"),
 
-	EAT_MAX UMETA (DisplayName = "DefaultMAX"),
-	//Default 
-};
 UENUM(BlueprintType)
 enum class ECombatState : uint8
 {
@@ -125,12 +117,30 @@ protected:
 	/** Check to make sure our weapon has ammo */
 	bool WeaponHasAmmo();
 
+	/** Fire Weapon functions */
 	void PlayFireSound();
-
 	void SendBullet();
-
 	void PlayGunFireMontage();
 	
+	/** Bound to the R key */
+	void ReloadButtonPressed();
+
+	/** Handle reloading of the weapon*/
+	void ReloadWeapon();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+
+	/** Checks to see if we have ammo of the EquippedWeapon's ammo type */
+	bool CarryingAmmo();
+
+	/** Called from Animation Blueprint with Grab Clip notify*/
+	UFUNCTION(BlueprintCallable)
+	void GrabClip();
+
+	/** Called from Animation Blueprint with Release Clip notify*/
+	UFUNCTION(BlueprintCallable)
+	void ReleaseClip();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -312,6 +322,18 @@ private:
 	/** Combat State, can only fire or reload if Unoccupied */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	ECombatState CombatState;
+
+	/** Montage for reload animations */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ReloadMontage;
+
+	/** Transform of the clip when we first grab the clip during reloading */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FTransform ClipTransform;
+
+	/** Scene component to attach to the Character's hand during reloading */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* HandSceneComponent;
 	
 public:
 	/** Getter with const only returns CameraBoom Subobject */

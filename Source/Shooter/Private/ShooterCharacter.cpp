@@ -89,6 +89,9 @@ CombatState(ECombatState::ECS_Unoccupied)
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); //... at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
+
+	//Create Hand Scene Component 
+	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
 	
 }
 
@@ -475,7 +478,7 @@ void AShooterCharacter::AutoFireReset()
 	}
 	else
 	{
-		// TODO: Reload Weapon
+		ReloadWeapon();
 	}
 	//if(WeaponHasAmmo())
 	//{
@@ -695,6 +698,100 @@ void AShooterCharacter::PlayGunFireMontage()
 	
 }
 
+void AShooterCharacter::ReloadButtonPressed()
+{
+	ReloadWeapon();
+}
+
+void AShooterCharacter::ReloadWeapon()
+{
+	if(CombatState != ECombatState::ECS_Unoccupied) return;
+
+	if(EquippedWeapon == nullptr) return;
+	// Do we have ammo of the correct type?
+	if(CarryingAmmo()) 
+	{
+		CombatState = ECombatState::ECS_Reloading;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if(ReloadMontage && AnimInstance)
+		{
+			AnimInstance->Montage_Play(ReloadMontage);
+			AnimInstance->Montage_JumpToSection(EquippedWeapon->GetReloadMontageSection());
+		}
+	}
+}
+
+void AShooterCharacter::FinishReloading()
+{
+	// Update the Combat State
+	CombatState = ECombatState::ECS_Unoccupied;
+
+	if(EquippedWeapon == nullptr) return;
+	const auto AmmoType {EquippedWeapon->GetAmmoType()};
+	
+	// Update the AmmoMap
+	if(AmmoMap.Contains(EquippedWeapon->GetAmmoType()))
+	{
+		// Amount of ammo the Character is carrying of the EquppiedWeapon type
+		int32 CarriedAmmo = AmmoMap[AmmoType];
+		// Space left in the magazine of EquippedWeapon
+		const int32 MagEmptySpace = EquippedWeapon->GetMagazineCapacity() - EquippedWeapon->GetAmmo();
+
+		if(MagEmptySpace > CarriedAmmo)
+		{
+			// Reload the magazine with all the ammo we are carrying
+			EquippedWeapon->ReloadAmmo(CarriedAmmo);
+			CarriedAmmo = 0;
+			AmmoMap.Add(AmmoType, CarriedAmmo);
+		}
+		else
+		{
+			// fill the magazine
+			EquippedWeapon->ReloadAmmo(MagEmptySpace);
+			CarriedAmmo -= MagEmptySpace;
+			AmmoMap.Add(AmmoType, CarriedAmmo);
+		}
+	}
+	
+}
+
+bool AShooterCharacter::CarryingAmmo()
+{
+	if(EquippedWeapon == nullptr) return false;
+
+	auto AmmoType = EquippedWeapon->GetAmmoType();
+
+	if(AmmoMap.Contains(AmmoType))
+	{
+		return AmmoMap[AmmoType] > 0;
+	}
+
+	return false;
+}
+
+void AShooterCharacter::GrabClip()
+{
+	if(EquippedWeapon == nullptr) return;
+
+	if(HandSceneComponent == nullptr) return;
+	
+	// Index for the clip bone on the Equipped Weapon
+	int32 ClipBoneIndex{ EquippedWeapon->GetItemMesh()->GetBoneIndex(EquippedWeapon->GetClipBoneName())};
+	// Store the transform of the clip
+	ClipTransform =  EquippedWeapon->GetItemMesh()->GetBoneTransform(ClipBoneIndex);
+
+	FAttachmentTransformRules AttachmentTransformRules(EAttachmentRule::KeepRelative, true);
+	HandSceneComponent->AttachToComponent(GetMesh(), AttachmentTransformRules, FName(TEXT("Hand_L")));
+	HandSceneComponent->SetWorldTransform(ClipTransform);
+
+	EquippedWeapon->SetMovingClip(true);
+}
+
+void AShooterCharacter::ReleaseClip()
+{
+	EquippedWeapon->SetMovingClip(false);
+}
+
 // Called every frame
 void AShooterCharacter::Tick(float DeltaTime)
 {
@@ -737,6 +834,8 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 	PlayerInputComponent->BindAction("Select", IE_Pressed, this, &AShooterCharacter::SelectButtonPressed);
 	PlayerInputComponent->BindAction("Select", IE_Released, this, &AShooterCharacter::SelectButtonReleased);
+
+	PlayerInputComponent->BindAction("ReloadButton", IE_Pressed, this, &AShooterCharacter::ReloadButtonPressed);
 }
 
 float AShooterCharacter::GetCrosshairSpreadMultiplier() const
