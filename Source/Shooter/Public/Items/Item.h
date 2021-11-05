@@ -147,10 +147,18 @@ private:
 	/** Initial Yaw offset between the camera and the interping item */
 	float InterpInitialYawOffset;
 
-
 	/** Curve used to scale the item when interping */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* ItemScaleCurve;
+
+	/** Sound played when Item is picked up */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	class USoundCue* PickupSound;
+
+	/** Sound played when the Item is equpied */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	USoundCue* EquipSound;
+	
 	
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;}
@@ -159,7 +167,10 @@ public:
 	FORCEINLINE EItemState GetItemState() const {return ItemState;} //getter
 	void SetItemState(EItemState State);
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const {return ItemMesh;}
-
+	FORCEINLINE USoundCue* GetPickupSound() const {return PickupSound;}
+	FORCEINLINE USoundCue* GetEquipSound() const {return EquipSound;}
+	
 	/** Called from the AShoooterCharacter class */
 	void StartItemCurve(AShooterCharacter* Char);
+	
 };
