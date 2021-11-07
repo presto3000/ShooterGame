@@ -42,4 +42,14 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bAiming;
+
+	/** Yaw of the Character this frame */
+	float CharacterYaw;
+
+	/** Yaw of the Character the previous frame */
+	float CharacterYawLastFrame;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn in Place", meta = (AllowPrivateAccess = "true"))
+	float RootYawOffset;
+	
 };
