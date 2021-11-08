@@ -80,4 +80,6 @@ public:
 	void ReloadAmmo(int32 Amount);
 	//Setter for moving clip:
 	FORCEINLINE void SetMovingClip(bool Move) {bMovingClip = Move; }
+
+	bool ClipIsFull();
 };
