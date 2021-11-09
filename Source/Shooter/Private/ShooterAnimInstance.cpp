@@ -19,7 +19,11 @@ TIPCharacterYawLastFrame(0.f),
 RootYawOffset(0.f),
 Pitch(0.f),
 bReloading(false),
-OffsetState(EOffsetState::EOS_Hip)
+OffsetState(EOffsetState::EOS_Hip),
+CharacterRotation(FRotator(0.f)),
+CharacterRotationLastFrame(FRotator(0.f)),
+YawDelta(0.f)
+
 {
 	
 }
@@ -32,6 +36,7 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 	}
 	if(ShooterCharacter)
 	{
+		bCrouching = ShooterCharacter->GetCrouching();
 		bReloading = ShooterCharacter->GetCombatState() == ECombatState::ECS_Reloading;
 				
 		//Get the lateral speed of the character from velocity
@@ -97,6 +102,7 @@ void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		}
 	}
 	TurnInPlace();
+	Lean(DeltaTime);
 }
 
 void UShooterAnimInstance::NativeInitializeAnimation()
@@ -124,11 +130,11 @@ void UShooterAnimInstance::TurnInPlace()
 	{
 		TIPCharacterYawLastFrame = TIPCharacterYaw;
 		TIPCharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
-		const float YawDelta{TIPCharacterYaw - TIPCharacterYawLastFrame};
+		const float TIPYawDelta{TIPCharacterYaw - TIPCharacterYawLastFrame};
 
 		// Root Yaw Offset, updated and clamped to [-180, 180]
 		//RootYawOffset -= YawDelta;
-		RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - YawDelta);
+		RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - TIPYawDelta);
 
 		// 1.0 if turning, 0.0 if not
 		const float Turning{GetCurveValue(TEXT("Turning"))};
@@ -172,15 +178,24 @@ void UShooterAnimInstance::Lean(float DeltaTime)
 {
 	if(ShooterCharacter == nullptr) return;
 
-	CharacterYawLastFrame = CharacterYaw;
-	CharacterYaw = ShooterCharacter->GetActorRotation().Yaw;
-
-	const float Target{(CharacterYaw - CharacterYawLastFrame) / DeltaTime};
+	CharacterRotationLastFrame = CharacterRotation;
+	CharacterRotation = ShooterCharacter->GetActorRotation();
+	
+	const FRotator Delta{UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame)};
+	
+	const float Target{Delta.Yaw / DeltaTime};
 
 	const float Interp{FMath::FInterpTo(YawDelta, Target, DeltaTime, 6.f)};
 
 	YawDelta = FMath::Clamp(Interp, -90.f, 90.f);
-	
+
+	// Disable Check.
+#if 0	
 	if(GEngine) GEngine->AddOnScreenDebugMessage(2, -1, FColor::Red,
-	ing::Printf(TEXT("CharacterYaw: %f"), RootYawOffset));
+	FString::Printf(TEXT("YawDelta: %f"), YawDelta));
+
+	if(GEngine) GEngine->AddOnScreenDebugMessage(3, -1, FColor::Red,
+FString::Printf(TEXT("Delta.Yaw: %f"), Delta.Yaw));
+#endif 
+	
 }
