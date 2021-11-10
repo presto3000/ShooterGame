@@ -22,7 +22,9 @@ bReloading(false),
 OffsetState(EOffsetState::EOS_Hip),
 CharacterRotation(FRotator(0.f)),
 CharacterRotationLastFrame(FRotator(0.f)),
-YawDelta(0.f)
+YawDelta(0.f),
+RecoilWeight(1.f),
+bTurningInPlace(false)
 
 {
 	
@@ -140,19 +142,22 @@ void UShooterAnimInstance::TurnInPlace()
 		const float Turning{GetCurveValue(TEXT("Turning"))};
 		if(Turning > 0)
 		{
+			bTurningInPlace = true;
 			RotationCurveLastFrame = RotationCurve;
 			RotationCurve = GetCurveValue(TEXT("Rotation"));
 			const float DeltaRotation {RotationCurve - RotationCurveLastFrame};
-
-			// RootYawOffset > 0, -> Turning Left. RootYawOffset <0, -> Turning Right
-			//if(RootYawOffset > 0) //Turning left
-			//{
-			//	RootYawOffset -= DeltaRotation;
-			//}
-			//else // Turning Right
-			//{
-			//	RootYawOffset += DeltaRotation;
-			//}
+// Left dead.
+#if 0
+			 RootYawOffset > 0, -> Turning Left. RootYawOffset <0, -> Turning Right
+			if(RootYawOffset > 0) //Turning left
+			{
+				RootYawOffset -= DeltaRotation;
+			}
+			else // Turning Right
+			{
+				RootYawOffset += DeltaRotation;
+			}
+#endif
 			RootYawOffset > 0 ? RootYawOffset -= DeltaRotation : RootYawOffset += DeltaRotation;
 
 			const float ABSRootYawOffset {FMath::Abs(RootYawOffset)};
@@ -161,8 +166,50 @@ void UShooterAnimInstance::TurnInPlace()
 				const float YawExcess{ABSRootYawOffset - 90.f};
 				RootYawOffset > 0 ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
 			}
+			else
+			{
+				bTurningInPlace = false;
+			}
 		}
 
+		// Set the REcoil Weight
+			if(bTurningInPlace)
+			{
+				if(bReloading)
+				{
+					RecoilWeight = 1.f;
+				}
+				else
+				{
+					RecoilWeight = 0.f;	
+				}
+				
+			}
+			else // not turning in place
+			{
+				if(bCrouching)
+				{
+					if(bReloading)
+					{
+						RecoilWeight = 1.f;
+					}
+					else
+					{
+						RecoilWeight = 0.1f;
+					}
+				}
+				else
+				{
+					if(bAiming || bReloading)
+					{
+					RecoilWeight = 1.f;
+					}
+					else
+					{
+						RecoilWeight = 0.5f;
+					}
+				}
+			}
 	//if(GEngine) GEngine->AddOnScreenDebugMessage(1, -1, FColor::Blue,
 	//	FString::Printf(TEXT("CharacterYaw: %f"), CharacterYaw));
 	//if(GEngine) GEngine->AddOnScreenDebugMessage(2, -1, FColor::Red,
