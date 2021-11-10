@@ -242,7 +242,7 @@ void UShooterAnimInstance::Lean(float DeltaTime)
 	FString::Printf(TEXT("YawDelta: %f"), YawDelta));
 
 	if(GEngine) GEngine->AddOnScreenDebugMessage(3, -1, FColor::Red,
-FString::Printf(TEXT("Delta.Yaw: %f"), Delta.Yaw));
+	FString::Printf(TEXT("Delta.Yaw: %f"), Delta.Yaw));
 #endif 
 	
 }

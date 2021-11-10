@@ -4,6 +4,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -29,13 +30,13 @@ AimingLookUpRate(20.f),
 // Mouse look sensitivity scale factors
 MouseHipTurnRate(1.f),
 MouseHipLookUpRate(1.f),
-MouseAimingTurnRate(0.2f),
-MouseAimingLookUpRate(0.2f),
+MouseAimingTurnRate(0.6f),
+MouseAimingLookUpRate(0.6f),
 // True when aiming the weapon
 bAiming(false),
 // Camera field of view values
 CameraDefaultFOV(0.f), // set in BeginPlay
-CameraZoomedFOV(35.f),
+CameraZoomedFOV(25.f),
 CameraCurrentFOV(0.f),
 ZoomInterpSpeed(20.f),
 // Crosshair spread factors
@@ -62,7 +63,14 @@ Starting9mmAmmo(85),
 StartingARAmmo(120),
 // Combat variables
 CombatState(ECombatState::ECS_Unoccupied),
-bCrouching(false)
+bCrouching(false),
+BaseMovementSpeed(650.f),
+CrouchMovementSpeed(300.f),
+StandingCapsuleHalfHeight(88.f),
+CrouchingCapsuleHalfHeight(44.f),
+BaseGroundFriction(2.f),
+CrouchingGroundFriction(100.f),
+bAimingButtonPressed(false)
 
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -112,6 +120,9 @@ void AShooterCharacter::BeginPlay()
 
 	// Initialize AmmoMap
 	InitializeAmmoMap();
+	
+	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+	
 	
 	UE_LOG(LogTemp, Warning, TEXT("BeginPlay() called!"));
 	
@@ -346,12 +357,17 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 
 void AShooterCharacter::AimingButtonPressed()
 {
-	bAiming = true;
+	bAimingButtonPressed = true;
+	if(CombatState != ECombatState::ECS_Reloading)
+	{
+		Aim();
+	}
 }
 
 void AShooterCharacter::AimingButtonReleased()
 {
-	bAiming = false;
+	bAimingButtonPressed = false;
+	StopAiming();
 }
 
 void AShooterCharacter::CameraInterpZoom(float DeltaTime)
@@ -712,10 +728,17 @@ void AShooterCharacter::ReloadWeapon()
 {
 	if(CombatState != ECombatState::ECS_Unoccupied) return;
 
+
+	
 	if(EquippedWeapon == nullptr) return;
 	// Do we have ammo of the correct type?
 	if(CarryingAmmo() && !EquippedWeapon->ClipIsFull()) 
 	{
+		if(bAiming)
+		{
+			StopAiming();
+		}
+		
 		CombatState = ECombatState::ECS_Reloading;
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 		if(ReloadMontage && AnimInstance)
@@ -730,6 +753,11 @@ void AShooterCharacter::FinishReloading()
 {
 	// Update the Combat State
 	CombatState = ECombatState::ECS_Unoccupied;
+
+	if(bAimingButtonPressed)
+	{
+		Aim();
+	}
 
 	if(EquippedWeapon == nullptr) return;
 	const auto AmmoType {EquippedWeapon->GetAmmoType()};
@@ -803,8 +831,55 @@ void AShooterCharacter::CrouchButtonPressed()
 	{
 		bCrouching = !bCrouching;
 	}
+	if (bCrouching)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = CrouchMovementSpeed;
+		GetCharacterMovement()->GroundFriction = CrouchingGroundFriction;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+		GetCharacterMovement()->GroundFriction = BaseGroundFriction;
+	}
+	
+}
+
+void AShooterCharacter::InterpCapsuleHalfHeight(float DeltaTime)
+{
+	float TargetCapsuleHalfHeight{};
+	if(bCrouching)
+	{
+		TargetCapsuleHalfHeight = CrouchingCapsuleHalfHeight;
+		
+	}
+	else
+	{
+		TargetCapsuleHalfHeight = StandingCapsuleHalfHeight;
+	}
+	const float InterpHalfHeight{FMath::FInterpTo(
+		GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), TargetCapsuleHalfHeight, DeltaTime, 20.f)};
+
+	// Negative value if crouching, Positive value if standing
+	const float DeltaCapsuleHalfHeight{InterpHalfHeight - GetCapsuleComponent()->GetScaledCapsuleHalfHeight()};
+	const FVector MeshOffset{0.f, 0.f, -DeltaCapsuleHalfHeight};
+	GetMesh()->AddLocalOffset(MeshOffset);
+	
+	GetCapsuleComponent()->SetCapsuleHalfHeight(InterpHalfHeight);
 
 	
+}
+
+void AShooterCharacter::Jump()
+{
+	if(bCrouching)
+	{
+		bCrouching = false;
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+	}
+	else
+	{
+		ACharacter::Jump();
+	}
 }
 
 // Called every frame
@@ -820,7 +895,8 @@ void AShooterCharacter::Tick(float DeltaTime)
 	CalculateCrosshairSpread(DeltaTime);
 	// Check OverlappedItemCount, then trace for items
 	TraceForItems();
-
+	// Interpolate the capsule half height based on crouching/standing
+	InterpCapsuleHalfHeight(DeltaTime);
 
 }
 
@@ -838,7 +914,7 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("Turn", this, &AShooterCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &AShooterCharacter::LookUp);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AShooterCharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &AShooterCharacter::FireButtonPressed);
@@ -853,6 +929,21 @@ void AShooterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("ReloadButton", IE_Pressed, this, &AShooterCharacter::ReloadButtonPressed);
 
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AShooterCharacter::CrouchButtonPressed);
+}
+
+void AShooterCharacter::Aim()
+{
+	bAiming = true;
+	GetCharacterMovement()->MaxWalkSpeed = CrouchMovementSpeed;
+}
+
+void AShooterCharacter::StopAiming()
+{
+	bAiming = false;
+	if(!bCrouching)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+	}
 }
 
 float AShooterCharacter::GetCrosshairSpreadMultiplier() const
