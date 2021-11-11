@@ -9,7 +9,7 @@
 #include "ShooterCharacter.generated.h"
 
 class AWeapon;
-
+class AAmmo;
 
 UENUM(BlueprintType)
 enum class ECombatState : uint8
@@ -157,6 +157,8 @@ public:
 
 	void Aim();
 	void StopAiming();
+
+	void PickupAmmo(AAmmo* Ammo);
 
 #pragma region Components
 private:
