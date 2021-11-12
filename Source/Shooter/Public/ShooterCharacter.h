@@ -384,7 +384,29 @@ private:
 
 	/** Used for knowing when the aiming button is pressed */
 	bool bAimingButtonPressed;
+
+	//--------------------------USceneVariables
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* WeaponInterpComp;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp1;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp2;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp3;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp4;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp5;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* InterpComp6;
 public:
 	/** Getter with const only returns CameraBoom Subobject */
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const {return CameraBoom;}
