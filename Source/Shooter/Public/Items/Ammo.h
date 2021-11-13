@@ -34,6 +34,8 @@ protected:
 		bool bFromSweep,
 		const FHitResult& SweepResult);
 
+
+
 private:
 
 	/** Mesh for the ammo pickup */
@@ -52,7 +54,13 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Ammo, meta = (AllowPrivateAccess = "true"))
 	class USphereComponent* AmmoCollisionSphere;
 
+	
+
+	
 public:
 	FORCEINLINE UStaticMeshComponent* GetAmmoMesh() const {return AmmoMesh; }
 	FORCEINLINE EAmmoType GetAmmoType() const {return AmmoType; }
+
+	virtual void EnableCustomDepth() override;
+	virtual void DisableCustomDepth() override;
 };

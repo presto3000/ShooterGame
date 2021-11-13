@@ -73,8 +73,8 @@ BaseGroundFriction(2.f),
 CrouchingGroundFriction(100.f),
 bAimingButtonPressed(false),
 // Pickup 
-bShouldPlayEquipSound(true),
 bShouldPlayPickupSound(true),
+bShouldPlayEquipSound(true),
 PickupSoundResetTime(0.2f),
 EquipSoundResetTime(0.2f)
 
@@ -144,6 +144,9 @@ void AShooterCharacter::BeginPlay()
 	}
 	// Spawn a default weapon and equip it
 	EquipWeapon(SpawnDefaultWeapon());
+	EquippedWeapon->DisableCustomDepth();
+	EquippedWeapon->DisableGlowMaterial();
+	
 
 	// Initialize AmmoMap
 	InitializeAmmoMap();
@@ -588,6 +591,7 @@ void AShooterCharacter::TraceForItems()
 			{
 				// Show Item's Pickup Widget
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
+				TraceHitItem->EnableCustomDepth();
 			}
 			// We hit an AItem last frame
 			if(TraceHitItemLastFrame)
@@ -597,6 +601,7 @@ void AShooterCharacter::TraceForItems()
 					// We are hitting a different AItem this frame from last frame
 					// Or AItem is null.
 					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+					TraceHitItemLastFrame->DisableCustomDepth();
 				}
 			}
 			//Store a reference to HitITem for next frame
@@ -609,6 +614,7 @@ void AShooterCharacter::TraceForItems()
 		// No longer Overlapping any items,
 		// Item last frame should not show widget
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+		TraceHitItemLastFrame->DisableCustomDepth();
 	}
 }
 

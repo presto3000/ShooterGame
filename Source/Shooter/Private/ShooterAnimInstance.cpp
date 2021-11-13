@@ -27,7 +27,6 @@ RecoilWeight(1.f),
 bTurningInPlace(false)
 
 {
-	
 }
 
 void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
