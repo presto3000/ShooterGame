@@ -144,6 +144,7 @@ void AShooterCharacter::BeginPlay()
 	}
 	// Spawn a default weapon and equip it
 	EquipWeapon(SpawnDefaultWeapon());
+	Inventory.Add(EquippedWeapon);
 	EquippedWeapon->DisableCustomDepth();
 	EquippedWeapon->DisableGlowMaterial();
 	
@@ -1027,7 +1028,15 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 	auto Weapon = Cast<AWeapon>(Item);
 	if(Weapon)
 	{
-		SwapWeapon(Weapon);
+		if(Inventory.Num() < Inventory_CAPACITY)
+		{
+			Inventory.Add(Weapon);
+		}
+		else // Inventory is full! Swap with EquippedWeapon
+		{
+			SwapWeapon(Weapon);	
+		}
+
 	}
 
 	auto Ammo = Cast<AAmmo> (Item);
@@ -1035,7 +1044,7 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 	{
 		PickupAmmo(Ammo);
 	}
-
+	
 	
 }
 

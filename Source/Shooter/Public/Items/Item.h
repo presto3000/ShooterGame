@@ -24,7 +24,7 @@ enum class EItemState : uint8
 	// Item State
 	EIS_Pickup UMETA(DisplayName = "Pickup"),
 	EIS_EqiupInterping UMETA(DisplayName = "EqiupInterping"),
-	EIS_Pickedup UMETA(DisplayName = "Pickedup"),
+	EIS_PickedUp UMETA(DisplayName = "PickedUp"),
 	EIS_Equipped UMETA(DisplayName = "Equipped"),
 	EIS_Falling UMETA(DisplayName = "Falling"),
 	
@@ -211,6 +211,10 @@ private:
 	/** Curve to drive the dynamic material parameters */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	class UCurveVector* PulseCurve;
+	
+	/** Curve to drive the dynamic material parameters */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UCurveVector* InterpPulseCurve;
 
 	FTimerHandle PulseTimer;
 
@@ -226,9 +230,20 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	float FresnelReflectFraction;
-
-
 #pragma endregion CurvePulseVector
+	//---------------
+
+	/** Background for this item in the inventory */ 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* IconBackground;
+	
+	/** Icon for this item in the inventory */ 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* IconItem;
+	
+	/** Ammo Icon for this item in the inventory */ 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* AmmoIcon;
 public:
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const {return PickupWidget;}
 	FORCEINLINE USphereComponent* GetAreaSphere() const {return AreaSphere;}

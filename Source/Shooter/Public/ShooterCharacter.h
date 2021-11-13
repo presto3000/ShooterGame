@@ -447,7 +447,13 @@ private:
 	/** Time to wait before we can play another Equip Sound */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
 	float EquipSoundResetTime;
-	
+
+	//-----------------
+	/** An array of AItems for our Inventory */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"));
+	TArray<AItem*> Inventory;
+
+	const int32 Inventory_CAPACITY{6};
 public:
 	/** Getter with const only returns CameraBoom Subobject */
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const {return CameraBoom;}
