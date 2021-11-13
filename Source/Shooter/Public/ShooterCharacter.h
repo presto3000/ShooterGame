@@ -18,8 +18,23 @@ enum class ECombatState : uint8
 	ECS_FireTimerInProgress UMETA (DisplayName = "FireTimerInProgress"),
 	ECS_Reloading UMETA (DisplayName = "Reloading"),
 
-	ECS_MAX UMETA (DisplayName = "Unoccupied"),
+	ECS_MAX UMETA (DisplayName = "DefaultMAX"),
 };
+
+USTRUCT(BlueprintType)
+struct FInterpLocation
+{
+	GENERATED_BODY()
+
+	// Scene component to use for its location for interping
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	USceneComponent* SceneComponent;
+
+	// Number of items interping to/at this scene comp location
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 ItemCount;
+};
+
 UCLASS()
 class SHOOTER_API AShooterCharacter : public ACharacter
 {
@@ -159,6 +174,10 @@ public:
 	void StopAiming();
 
 	void PickupAmmo(AAmmo* Ammo);
+
+	void InitializeInterpLocations();
+
+
 
 #pragma region Components
 private:
@@ -407,6 +426,28 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
 	USceneComponent* InterpComp6;
+
+	/** Array of interp location structs */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	TArray<FInterpLocation>InterpLocations;
+
+	FTimerHandle PickupSoundTimer;
+	FTimerHandle EquipSoundTimer;
+
+	bool bShouldPlayPickupSound;
+	bool bShouldPlayEquipSound;
+
+	void ResetPickupSoundTimer();
+	void ResetEquipSoundTimer();
+
+	/** Time to wait before we can play another Pickup Sound */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	float PickupSoundResetTime;
+
+	/** Time to wait before we can play another Equip Sound */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SceneVar, meta = (AllowPrivateAccess = "true"))
+	float EquipSoundResetTime;
+	
 public:
 	/** Getter with const only returns CameraBoom Subobject */
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const {return CameraBoom;}
@@ -423,7 +464,8 @@ public:
 	/** Adds/subtracts to/from OverlappedItemCount and updates bShouldTraceForItems */
 	void IncrementOverlappedItemCount(int8 Amount);
 
-	FVector GetCameraInterpLocation();
+	// No longer needed; AItem has GetInterpLocation
+	// FVector GetCameraInterpLocation();
 
 	void GetPickupItem(AItem* Item);
 
@@ -431,5 +473,16 @@ public:
 	FORCEINLINE bool GetCrouching() const {return bCrouching; }
 
 	
-	
+	FInterpLocation GetInterpLocation(int32 Index);
+
+	// Returns the index in InterpLocations array with the lowest ItemCount
+	int32 GetInterpLocationIndex();
+
+	void IncrementInterpLocItemCount(int32 Index, int32 Amount);
+
+	FORCEINLINE bool ShouldPlayPickupSound() const {return bShouldPlayPickupSound; }
+	FORCEINLINE bool ShouldPlayEquipSound() const {return bShouldPlayEquipSound; }
+
+	void StartPickupSoundTimer();
+	void StartEquipSoundTimer();
 };
