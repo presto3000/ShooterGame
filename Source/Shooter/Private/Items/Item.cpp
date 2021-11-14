@@ -104,6 +104,7 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		if(ShooterCharacter)
 		{
 			ShooterCharacter->IncrementOverlappedItemCount(-1);
+			ShooterCharacter->UnHighlightInventorySlot();
 		}
 	}
 }
@@ -310,14 +311,13 @@ void AItem::FinishInterping()
 		Character->GetPickupItem(this);
 		//**/**/**/**/**//
 		//SetItemState(EItemState::EIS_PickedUp);
+		Character->UnHighlightInventorySlot();
 	}
 	// Set scale back to normal
 	SetActorScale3D(FVector(1.f));
 	
 	DisableGlowMaterial();
-	
 	bCanChangeCustomDepth = true;
-	
 	DisableCustomDepth();
 
 	

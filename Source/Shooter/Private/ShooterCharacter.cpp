@@ -76,7 +76,9 @@ bAimingButtonPressed(false),
 bShouldPlayPickupSound(true),
 bShouldPlayEquipSound(true),
 PickupSoundResetTime(0.2f),
-EquipSoundResetTime(0.2f)
+EquipSoundResetTime(0.2f),
+// Icon animation property
+HighlightedSlot(-1)
 
 
 {
@@ -591,6 +593,25 @@ void AShooterCharacter::TraceForItems()
 		if(ItemTraceResult.bBlockingHit)
 		{
 			TraceHitItem = Cast<AItem>(ItemTraceResult.Actor);
+			const auto TraceHitWeapon = Cast<AWeapon> (TraceHitItem);
+			if(TraceHitWeapon)
+			{
+				if(HighlightedSlot == -1)
+				{
+					// Not currently highlighting a lost; highlight one 
+					HighlightInventorySlot();
+				}
+			}
+			else
+			{
+				// Is a slot being highlight?
+				if(HighlightedSlot != -1)
+				{
+					// UnHighlight the slot
+					UnHighlightInventorySlot();
+				}
+			}
+			
 			if(TraceHitItem && TraceHitItem->GetItemState() == EItemState::EIS_EqiupInterping)
 			{
 				TraceHitItem = nullptr;
@@ -650,7 +671,7 @@ AWeapon* AShooterCharacter::SpawnDefaultWeapon()
 	return nullptr;
 }
 
-void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip, bool bSwapping)
 {
 	if(WeaponToEquip)
 	{
@@ -667,7 +688,7 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 			// -1 = no EquippedWeapon yet. No need to reverse the icon animation
 			EquipItemDelegate.Broadcast(-1, WeaponToEquip->GetSlotIndex());
 		}
-		else
+		else if(!bSwapping)
 		{
 			EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), WeaponToEquip->GetSlotIndex());
 		}
@@ -723,9 +744,8 @@ void AShooterCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 		
 	}
 
-	
 	DropWeapon();
-	EquipWeapon(WeaponToSwap);
+	EquipWeapon(WeaponToSwap, true);
 	TraceHitItem = nullptr;
 	TraceHitItemLastFrame = nullptr;
 }
@@ -1191,24 +1211,62 @@ void AShooterCharacter::FiveKeyPressed()
 
 void AShooterCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, int32 NewItemIndex)
 {
+#if 0
 	if((CurrentItemIndex == NewItemIndex) || (NewItemIndex >= Inventory.Num()
 		|| (CombatState != ECombatState::ECS_Unoccupied))) return;
-	auto OldEquippedWeapon = EquippedWeapon;
-	auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
-	EquipWeapon(NewWeapon);
-
-	OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
-	NewWeapon->SetItemState(EItemState::EIS_Equipped);
-
-	CombatState = ECombatState::ECS_Equipping;
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if(AnimInstance && EquipMontage)
+#endif
+	const bool bCanExchangeItems = (CurrentItemIndex != NewItemIndex) &&
+		(NewItemIndex < Inventory.Num()) &&
+		(CombatState == ECombatState::ECS_Unoccupied || CombatState == ECombatState::ECS_Equipping);
+	if (bCanExchangeItems)
 	{
-		AnimInstance->Montage_Play(EquipMontage, 1.f);
-		AnimInstance->Montage_JumpToSection(FName("Equip"));
+		auto OldEquippedWeapon = EquippedWeapon;
+		auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
+		EquipWeapon(NewWeapon);
+
+		OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
+		NewWeapon->SetItemState(EItemState::EIS_Equipped);
+
+		CombatState = ECombatState::ECS_Equipping;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if(AnimInstance && EquipMontage)
+		{
+			AnimInstance->Montage_Play(EquipMontage, 1.f);
+			AnimInstance->Montage_JumpToSection(FName("Equip"));
+		}
+
+		NewWeapon->PlayEquipSound(true);	
 	}
 
-	NewWeapon->PlayEquipSound(true);
+}
+
+int32 AShooterCharacter::GetEmptyInventorySlot()
+{
+	for(int32 i = 0; i < Inventory.Num(); i++)
+	{
+		if(Inventory[i] == nullptr)
+		{
+			return i;
+		}
+	}
+	if (Inventory.Num() < Inventory_CAPACITY)
+	{
+		return Inventory.Num();
+	}
+	return -1; // Inventory is full!
+}
+
+void AShooterCharacter::HighlightInventorySlot()
+{
+	const int32 EmptySlot{GetEmptyInventorySlot()};
+	HighlightIconDelegate.Broadcast(EmptySlot, true);
+	HighlightedSlot = EmptySlot;
+}
+
+void AShooterCharacter::UnHighlightInventorySlot()
+{
+	HighlightIconDelegate.Broadcast(HighlightedSlot, false);
+	HighlightedSlot = -1;
 }
 
 int32 AShooterCharacter::GetInterpLocationIndex()
