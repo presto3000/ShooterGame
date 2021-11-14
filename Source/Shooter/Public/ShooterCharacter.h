@@ -17,6 +17,7 @@ enum class ECombatState : uint8
 	ECS_Unoccupied UMETA (DisplayName = "Unoccupied"),
 	ECS_FireTimerInProgress UMETA (DisplayName = "FireTimerInProgress"),
 	ECS_Reloading UMETA (DisplayName = "Reloading"),
+	ECS_Equipping UMETA (DisplayName = "Equipping"),
 
 	ECS_MAX UMETA (DisplayName = "DefaultMAX"),
 };
@@ -146,6 +147,9 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void FinishReloading();
 
+	UFUNCTION(BlueprintCallable)
+	void FinishEquipping();
+
 	/** Checks to see if we have ammo of the EquippedWeapon's ammo type */
 	bool CarryingAmmo();
 
@@ -163,12 +167,6 @@ protected:
 	void InterpCapsuleHalfHeight(float DeltaTime);
 
 	virtual void Jump() override;
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void Aim();
 	void StopAiming();
@@ -176,6 +174,24 @@ public:
 	void PickupAmmo(AAmmo* Ammo);
 
 	void InitializeInterpLocations();
+
+	void FKeyPressed();
+	void OneKeyPressed();
+	void TwoKeyPressed();
+	void ThreeKeyPressed();
+	void FourKeyPressed();
+	void FiveKeyPressed();
+
+	void ExchangeInventoryItems(int32 CurrentItemIndex, int32 NewItemIndex);
+	
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+
 
 
 
@@ -359,6 +375,10 @@ private:
 	/** Montage for reload animations */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* ReloadMontage;
+	
+	/** Montage for equip animation */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* EquipMontage;
 
 	/** Transform of the clip when we first grab the clip during reloading */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
