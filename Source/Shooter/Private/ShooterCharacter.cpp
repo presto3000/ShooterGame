@@ -145,6 +145,7 @@ void AShooterCharacter::BeginPlay()
 	// Spawn a default weapon and equip it
 	EquipWeapon(SpawnDefaultWeapon());
 	Inventory.Add(EquippedWeapon);
+	EquippedWeapon->SetSlotIndex(0);
 	EquippedWeapon->DisableCustomDepth();
 	EquippedWeapon->DisableGlowMaterial();
 	
@@ -642,6 +643,18 @@ void AShooterCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 			// Attach the Weapon to the hand socket RightHandSocket
 			HandSocket->AttachActor(WeaponToEquip, GetMesh());
 		}
+
+		if(EquippedWeapon == nullptr)
+		{
+			// -1 = no EquippedWeapon yet. No need to reverse the icon animation
+			EquipItemDelegate.Broadcast(-1, WeaponToEquip->GetSlotIndex());
+		}
+		else
+		{
+			EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), WeaponToEquip->GetSlotIndex());
+		}
+
+		
 		// Set EquippedWeapon to the newly spawned Weapon
 		EquippedWeapon = WeaponToEquip;
 		// Set Item State
@@ -1030,11 +1043,14 @@ void AShooterCharacter::GetPickupItem(AItem* Item)
 	{
 		if(Inventory.Num() < Inventory_CAPACITY)
 		{
+			Weapon->SetSlotIndex(Inventory.Num());
 			Inventory.Add(Weapon);
+			Weapon->SetItemState(EItemState::EIS_Pickup);
 		}
 		else // Inventory is full! Swap with EquippedWeapon
 		{
-			SwapWeapon(Weapon);	
+			SwapWeapon(Weapon);
+
 		}
 
 	}
