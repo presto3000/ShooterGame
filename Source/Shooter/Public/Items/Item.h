@@ -315,12 +315,23 @@ public:
 	void SetItemState(EItemState State);
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const {return ItemMesh;}
 	FORCEINLINE USoundCue* GetPickupSound() const {return PickupSound;}
+	FORCEINLINE void SetPickupSound(USoundCue* Sound) {PickupSound = Sound; }
+	FORCEINLINE void SetEquipSound(USoundCue* Sound) {EquipSound = Sound; }
+	
 	FORCEINLINE USoundCue* GetEquipSound() const {return EquipSound;}
 	FORCEINLINE int32 GetItemCount() const {return ItemCount;}
 	FORCEINLINE int32 GetSlotIndex() const {return SlotIndex;} //getter
 	FORCEINLINE void SetSlotIndex(int32 Index) {SlotIndex = Index; } //setter
 	FORCEINLINE void SetCharacter(AShooterCharacter* Char) {Character = Char; }
 	FORCEINLINE void SetCharacterInventoryFull(bool bFull) {bCharacterInventoryFull = bFull; }
+	FORCEINLINE void SetItemName (FString Name) {ItemName = Name; }
+	// Set item icon for the inventory
+	FORCEINLINE void SetIconItem (UTexture2D* Icon) {IconItem = Icon; }
+	// Set ammo icon for the pickup widget
+	FORCEINLINE void SetAmmoIcon (UTexture2D* Icon) {AmmoIcon = Icon; }
+
+
+	
 	/** Called from the AShoooterCharacter class */
 	void StartItemCurve(AShooterCharacter* Char, bool bForcePlaySound = false);
 	

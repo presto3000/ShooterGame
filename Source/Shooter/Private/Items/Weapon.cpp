@@ -30,6 +30,47 @@ void AWeapon::Tick(float DeltaTime)
 	
 }
 
+void AWeapon::OnConstruction(const FTransform& Transform)
+{
+
+	const FString WeaponTablePath{TEXT("DataTable'/Game/_Game/DataTable/WeaponDataTable.WeaponDataTable'")};
+	UDataTable* WeaponTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass()
+		, nullptr, *WeaponTablePath));
+
+	if (WeaponTableObject)
+	{
+		FWeaponDataTable* WeaponDataRow = nullptr;
+		switch(WeaponType)
+		{
+		case EWeaponType::EWT_SubmachineGun:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("SubmachineGun"), TEXT(""), true);		
+			break;
+		case EWeaponType::EWT_AssaultRifle:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("AssaultRifle"), TEXT(""), true);
+			break;
+		}
+		if(WeaponDataRow)
+		{
+			AmmoType = WeaponDataRow->AmmoType;
+			Ammo = WeaponDataRow->WeaponAmmo;
+			MagazineCapacity = WeaponDataRow->MagazingCapacity;
+			SetPickupSound(WeaponDataRow->PickupSound);
+			SetEquipSound(WeaponDataRow->EquipSound);
+			GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
+			SetItemName(WeaponDataRow->ItemName);
+			SetIconItem(WeaponDataRow->InventoryIcon);
+			SetAmmoIcon(WeaponDataRow->AmmoIcon);
+			
+		}
+			
+	}
+}
+
+void AWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 void AWeapon::ThrowWeapon()
 {
 	FRotator MeshRotation{0.f, GetItemMesh()->GetComponentRotation().Yaw,0.f};
@@ -80,3 +121,4 @@ void AWeapon::StopFalling()
 	SetItemState(EItemState::EIS_Pickup);
 	StartPulseTimer();
 }
+
