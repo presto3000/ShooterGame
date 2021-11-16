@@ -6,18 +6,9 @@
 #include "Items/Item.h"
 #include "AmmoType.h"
 #include "Engine/DataTable.h"
+#include "WeaponType.h"
 #include "Weapon.generated.h"
 
-UENUM(BlueprintType)
-enum class EWeaponType : uint8
-{
-	// E Weapon Type
-	EWT_SubmachineGun UMETA(DisplayName = "SubmachineGun"),
-	EWT_AssaultRifle UMETA(DisplayName = "AssaultRifle"),
-
-	EWT_MAX UMETA(DisplayName = "DefaultMAX")
-	
-};
 USTRUCT(BlueprintType)
 struct FWeaponDataTable : public FTableRowBase
 {
@@ -49,6 +40,15 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* AmmoIcon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterialInstance* MaterialInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 MaterialIndex;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName ClipBoneName;
 };
 /**
  * 
@@ -103,7 +103,8 @@ private:
 	/** Data table for weapon properties */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
 	UDataTable* WeaponDataTable;
-	
+
+	int32 PreviousMaterialIndex;
 public:
 	/** Adds an impulse to the Weapon */
 	void ThrowWeapon();
@@ -117,6 +118,7 @@ public:
 	FORCEINLINE EAmmoType GetAmmoType() const {return AmmoType; }
 	FORCEINLINE FName GetReloadMontageSection() const {return ReloadMontageSection; }
 	FORCEINLINE FName GetClipBoneName() const {return  ClipBoneName; }
+	FORCEINLINE void SetClipBoneName(FName Name) {ClipBoneName = Name; }
 	void ReloadAmmo(int32 Amount);
 	//Setter for moving clip:
 	FORCEINLINE void SetMovingClip(bool Move) {bMovingClip = Move; }
