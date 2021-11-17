@@ -49,6 +49,30 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName ClipBoneName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName ReloadMontageSection;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UAnimInstance> AnimBP;
+
+
+	//----Crosshair
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsMiddle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsBottom;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* CrosshairsTop;
+	
 };
 /**
  * 
@@ -99,12 +123,30 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponProperties", meta = (Allowprivateaccess = "true"))
 	FName ClipBoneName;
 
+#pragma region WeaponDataTable
 	//-------------
 	/** Data table for weapon properties */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
 	UDataTable* WeaponDataTable;
 
 	int32 PreviousMaterialIndex;
+
+	//----Crosshair : Textures for the weapon crosshairs
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
+	UTexture2D* CrosshairsMiddle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
+	UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
+	UTexture2D* CrosshairsRight;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
+	UTexture2D* CrosshairsBottom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
+	UTexture2D* CrosshairsTop;
+#pragma endregion WeaponDataTable
 public:
 	/** Adds an impulse to the Weapon */
 	void ThrowWeapon();
@@ -117,6 +159,7 @@ public:
 	FORCEINLINE EWeaponType GetWeaponType() const {return WeaponType; }
 	FORCEINLINE EAmmoType GetAmmoType() const {return AmmoType; }
 	FORCEINLINE FName GetReloadMontageSection() const {return ReloadMontageSection; }
+	FORCEINLINE void SetReloadMontageSection(FName Name) {ReloadMontageSection = Name; }
 	FORCEINLINE FName GetClipBoneName() const {return  ClipBoneName; }
 	FORCEINLINE void SetClipBoneName(FName Name) {ClipBoneName = Name; }
 	void ReloadAmmo(int32 Amount);
