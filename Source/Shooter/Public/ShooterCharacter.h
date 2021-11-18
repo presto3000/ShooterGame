@@ -254,12 +254,12 @@ private:
 #pragma endregion CameraAndAiming
 #pragma region GunCombat		
 	/** Randomized gunshot sound cue*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class USoundCue* FireSound;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	//class USoundCue* FireSound;
 	
 	/** Flash spawned at BarrelSocket*/
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class UParticleSystem* MuzzleFlash;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	//class UParticleSystem* MuzzleFlash;
 	
 	/**	Montage for a firing a weapon*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -320,7 +320,7 @@ private:
 	bool bShouldFire;
 
 	/** Rate of automatic gun fire */
-	float AutomaticFireRate;
+	//float AutomaticFireRate;
 
 	/** Sets a timer between gunshots */
 	FTimerHandle AutoFireTimer;

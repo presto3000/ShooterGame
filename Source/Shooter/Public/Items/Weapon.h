@@ -72,7 +72,18 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AutoFireRate;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UParticleSystem* MuzzleFlash;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundCue* FireSound;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName BoneToHide;
 };
 /**
  * 
@@ -146,6 +157,23 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
 	UTexture2D* CrosshairsTop;
+
+	/** The speed at which automatic fire happens */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
+	float AutoFireRate;
+
+	/** Particle system spawned at the BarrelSocket */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
+	class UParticleSystem* MuzzleFlash;
+
+	/** Sound played when the weapon is fired */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (Allowprivateaccess = "true"))
+	USoundCue* FireSound;
+
+	/** Name of the bone to hide on the weapon mesh */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FName BoneToHide;
+	
 #pragma endregion WeaponDataTable
 public:
 	/** Adds an impulse to the Weapon */
@@ -162,6 +190,10 @@ public:
 	FORCEINLINE void SetReloadMontageSection(FName Name) {ReloadMontageSection = Name; }
 	FORCEINLINE FName GetClipBoneName() const {return  ClipBoneName; }
 	FORCEINLINE void SetClipBoneName(FName Name) {ClipBoneName = Name; }
+	FORCEINLINE float GetAutoFireRate() const {return AutoFireRate; }
+	FORCEINLINE UParticleSystem* GetMuzzleFlash() const {return MuzzleFlash; }
+	FORCEINLINE USoundCue* GetFireSound() const {return FireSound; }
+	
 	void ReloadAmmo(int32 Amount);
 	//Setter for moving clip:
 	FORCEINLINE void SetMovingClip(bool Move) {bMovingClip = Move; }
