@@ -29,6 +29,7 @@ EquippedWeaponType(EWeaponType::EWT_MAX),
 bShouldUseFABRIK(false)
 
 {
+	
 }
 
 void UShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)

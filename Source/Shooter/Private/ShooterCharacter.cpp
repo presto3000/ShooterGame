@@ -270,6 +270,12 @@ void AShooterCharacter::FireWeapon()
 				// Subtract 1 from the Weapon's Ammo
 				EquippedWeapon->DecrementAmmo();
 				StartFireTimer();
+
+				if(EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol)
+				{
+					// Start moving slide timer
+					EquippedWeapon->StartSlideTimer();
+				}
 			}
 		
 
