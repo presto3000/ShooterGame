@@ -2,10 +2,12 @@
 
 #include "ShooterCharacter.h"
 
+#include "BulletHitInterface.h"
 #include "DrawDebugHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Enemy/Enemy.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -373,10 +375,13 @@ void AShooterCharacter::FireWeapon()
 	}
 }
 
-bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
+bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult)
 {
 	// Check for crosshair trace hit
 	FHitResult CrosshairHitResult;
+	//local:
+	FVector OutBeamLocation;
+	
 	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamLocation);
 	if(bCrosshairHit)
 	{
@@ -390,17 +395,19 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 	
 	// Perform trace from gun barrel
 	// Perform a second trace, this time for the gun barrel
-	FHitResult WeaponTraceHit;
+	//FHitResult WeaponTraceHit;
+	
 	const FVector WeaponTraceStart {MuzzleSocketLocation};
 	const FVector StartToEnd{OutBeamLocation - MuzzleSocketLocation};
 	const FVector WeaponTraceEnd {MuzzleSocketLocation + StartToEnd * 1.25f};
-	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
-	if (WeaponTraceHit.bBlockingHit) // Object between barrel and BeamEndPoint?
+	GetWorld()->LineTraceSingleByChannel(OutHitResult, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
+	if (!OutHitResult.bBlockingHit) // Object between barrel and BeamEndPoint?
 	{
-		OutBeamLocation = WeaponTraceHit.Location;
-		return true;
+		//OutBeamLocation = WeaponTraceHit.Location;
+		OutHitResult.Location = OutBeamLocation;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 void AShooterCharacter::AimingButtonPressed()
@@ -797,18 +804,63 @@ void AShooterCharacter::SendBullet()
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), EquippedWeapon->GetMuzzleFlash(), SocketTransform);
 		}
 		//Using GetBeamEndLocation Refactor func
-		FVector BeamEnd;
-		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
+		//FVector BeamEnd;
+		FHitResult BeamHitResult;
+		
+		bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
 		if (bBeamEnd)
 		{
-			if(ImpactParticles)
+			// Does hit Actor implement BulletHitInterface?
+			if(BeamHitResult.Actor.IsValid())
 			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamEnd);
+				IBulletHitInterface* BulletHitInterface = Cast<IBulletHitInterface>(BeamHitResult.Actor.Get());
+				if(BulletHitInterface)
+				{
+					BulletHitInterface->BulletHit_Implementation(BeamHitResult);
+				}
+				AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.Actor.Get());
+				if(HitEnemy)
+				{
+					if(BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone())
+					{
+						// Head shot
+									UGameplayStatics::ApplyDamage(
+						BeamHitResult.Actor.Get(),
+						EquippedWeapon->GetHeadShotDamage(),
+						GetController(),
+						this,
+						UDamageType::StaticClass());
+
+					//UE_LOG(LogTemp, Warning, TEXT("Hit Component: %s"), *BeamHitResult.BoneName.ToString());		
+					}
+					else
+					{
+						// Body shot
+						UGameplayStatics::ApplyDamage(
+			BeamHitResult.Actor.Get(),
+				EquippedWeapon->GetDamage(),
+				GetController(),
+					this,
+								UDamageType::StaticClass());
+
+						//UE_LOG(LogTemp, Warning, TEXT("Hit Component: %s"), *BeamHitResult.BoneName.ToString());
+					}
+
+				}
 			}
+			else
+			{
+				// Spawn default particles
+				if(ImpactParticles)
+				{
+					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, BeamHitResult.Location);
+				}
+			}
+
 			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BeamParticles, SocketTransform);
 			if(Beam)
 			{
-				Beam->SetVectorParameter(FName("Target"), BeamEnd);
+				Beam->SetVectorParameter(FName("Target"), BeamHitResult.Location);
 			}
 		}
 	}
