@@ -15,6 +15,7 @@ public class Shooter : ModuleRules
 			"Engine",
 			"InputCore",
 			"UMG",
+			"PhysicsCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

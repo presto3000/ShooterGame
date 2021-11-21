@@ -83,7 +83,7 @@ void AItem::BeginPlay()
 }
 void AItem::OnConstruction(const FTransform& Transform)
 {
-	Super::OnConstruction(Transform);
+
 	// Load the data in the Item Rarity Data Table
 
 	// Path to the Item Rarity Data Table

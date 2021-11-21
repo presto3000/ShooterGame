@@ -39,7 +39,7 @@ void AWeapon::Tick(float DeltaTime)
 
 void AWeapon::OnConstruction(const FTransform& Transform)
 {
-
+	Super::OnConstruction(Transform);
 	const FString WeaponTablePath{TEXT("DataTable'/Game/_Game/DataTable/WeaponDataTable.WeaponDataTable'")};
 	UDataTable* WeaponTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass()
 		, nullptr, *WeaponTablePath));
@@ -87,8 +87,9 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			AutoFireRate = WeaponDataRow->AutoFireRate;
 			MuzzleFlash = WeaponDataRow->MuzzleFlash;
 			FireSound = WeaponDataRow->FireSound;
-
 			BoneToHide = WeaponDataRow->BoneToHide;
+			bAutomatic = WeaponDataRow->bAutomatic;
+			
 			
 		}
 		if(GetMaterialInstance())

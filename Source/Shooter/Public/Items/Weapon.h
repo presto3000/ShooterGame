@@ -84,6 +84,9 @@ struct FWeaponDataTable : public FTableRowBase
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName BoneToHide;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bAutomatic;
 };
 /**
  * 
@@ -176,6 +179,8 @@ private:
 	/** Name of the bone to hide on the weapon mesh */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (AllowPrivateAccess = "true"))
 	FName BoneToHide;
+
+	
 #pragma region PistolSlide
 	/** Amount that the slide is pushed back during pistol fire */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
@@ -233,6 +238,7 @@ public:
 	FORCEINLINE float GetAutoFireRate() const {return AutoFireRate; }
 	FORCEINLINE UParticleSystem* GetMuzzleFlash() const {return MuzzleFlash; }
 	FORCEINLINE USoundCue* GetFireSound() const {return FireSound; }
+	FORCEINLINE bool GetAutomatic() const {return bAutomatic; }
 	
 	void StartSlideTimer();
 	

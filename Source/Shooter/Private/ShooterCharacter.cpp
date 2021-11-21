@@ -14,8 +14,11 @@
 #include "Items/Weapon.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#include "Shooter/Shooter.h"
 #include "Sound/SoundCue.h"
 #include "Windows/WindowsApplication.h"
+
 
 
 // Sets default values
@@ -403,7 +406,7 @@ bool AShooterCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, 
 void AShooterCharacter::AimingButtonPressed()
 {
 	bAimingButtonPressed = true;
-	if(CombatState != ECombatState::ECS_Reloading)
+	if(CombatState != ECombatState::ECS_Reloading && CombatState != ECombatState::ECS_Equipping)
 	{
 		Aim();
 	}
@@ -532,11 +535,13 @@ void AShooterCharacter::StartFireTimer()
 void AShooterCharacter::AutoFireReset()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
+	if(EquippedWeapon == nullptr) return;
 	if(WeaponHasAmmo())
 	{
-		if(bFireButtonPressed)
+		if(bFireButtonPressed && EquippedWeapon->GetAutomatic())
 		{
 			FireWeapon();
+			
 		}
 	}
 	else
@@ -896,6 +901,10 @@ void AShooterCharacter::FinishReloading()
 void AShooterCharacter::FinishEquipping()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
+	if(bAimingButtonPressed)
+	{
+		Aim();
+	}
 }
 
 bool AShooterCharacter::CarryingAmmo()
@@ -1227,6 +1236,10 @@ void AShooterCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, int32 New
 		(CombatState == ECombatState::ECS_Unoccupied || CombatState == ECombatState::ECS_Equipping);
 	if (bCanExchangeItems)
 	{
+		if(bAiming)
+		{
+			StopAiming();
+		}
 		auto OldEquippedWeapon = EquippedWeapon;
 		auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
 		EquipWeapon(NewWeapon);
@@ -1268,6 +1281,38 @@ void AShooterCharacter::HighlightInventorySlot()
 	const int32 EmptySlot{GetEmptyInventorySlot()};
 	HighlightIconDelegate.Broadcast(EmptySlot, true);
 	HighlightedSlot = EmptySlot;
+}
+
+EPhysicalSurface AShooterCharacter::GetSurfaceType()
+{
+	// Line trace for the surfaces
+	FHitResult HitResult;
+	//Starting loc and end
+	const FVector Start{GetActorLocation()};
+	const FVector End {Start + FVector(0.f, 0.f, -400.f)};
+	//Colission quryparams:
+	FCollisionQueryParams QueryParams;
+	QueryParams.bReturnPhysicalMaterial = true;
+	
+	GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		Start,
+		End,
+		ECollisionChannel::ECC_Visibility,
+		QueryParams);
+	//if(HitResult.GetActor())
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s"), *HitResult.Actor->GetName());	
+	//}
+	//auto HitSurface = HitResult.PhysMaterial->SurfaceType;
+	//if(HitSurface == EPS_Grass)
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Hit Grass surface type!"));	
+	//}
+
+	return UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
+	
+	
 }
 
 void AShooterCharacter::UnHighlightInventorySlot()
