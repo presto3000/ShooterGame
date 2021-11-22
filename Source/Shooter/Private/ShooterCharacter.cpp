@@ -832,7 +832,7 @@ void AShooterCharacter::SendBullet()
 						GetController(),
 						this,
 						UDamageType::StaticClass());
-
+						HitEnemy->ShowHitNumber(Damage, BeamHitResult.Location, true);
 					//UE_LOG(LogTemp, Warning, TEXT("Hit Component: %s"), *BeamHitResult.BoneName.ToString());		
 					}
 					else
@@ -847,8 +847,9 @@ void AShooterCharacter::SendBullet()
 								UDamageType::StaticClass());
 
 						//UE_LOG(LogTemp, Warning, TEXT("Hit Component: %s"), *BeamHitResult.BoneName.ToString());
+						HitEnemy->ShowHitNumber(Damage, BeamHitResult.Location, false);
 					}
-					HitEnemy->ShowHitNumber(Damage, BeamHitResult.Location);
+
 				}
 			}
 			else

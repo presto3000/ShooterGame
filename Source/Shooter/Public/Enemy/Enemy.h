@@ -37,6 +37,13 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StoreHitNumber(UUserWidget* HitNumber, FVector Location);
 
+	//HitNumbers callback func, needs to be a ufunction
+	//FTimerDelegate has ability to bind functions with a parameters 
+	UFUNCTION()
+	void DestroyHitNumber(UUserWidget* HitNumber);
+
+	void UpdateHitNumbers();
+
 private:
 	/** Particles to spawn when his by bullets */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -84,6 +91,10 @@ private:
 	/** Map to store HitNumber widgets and their hit locations */
 	UPROPERTY(VisibleAnywhere, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	TMap<UUserWidget*, FVector> HitNumbers;
+
+	/** Time before a HitNumber is removed from the screen */
+	UPROPERTY(EditAnywhere, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float HitNumberDestroyTime;
 	
 #pragma endregion HitNumbers
 	
@@ -102,6 +113,6 @@ public:
 	FORCEINLINE FString GetHeadBone() const {return HeadBone; }
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void ShowHitNumber(int32 Damage, FVector HitLocation);
+	void ShowHitNumber(int32 Damage, FVector HitLocation, bool bHeadShot);
 
 };
