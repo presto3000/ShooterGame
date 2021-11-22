@@ -3,8 +3,12 @@
 
 #include "Enemy/Enemy.h"
 
+#include "DrawDebugHelpers.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Enemy/EnemyController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Sound/SoundCue.h"
 
 // Sets default values
@@ -28,7 +32,20 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	// Get the AI Controller
+	EnemyControler = Cast<AEnemyController>(GetController());
 	
+	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint);
+	//Debughelpers:
+	DrawDebugSphere(GetWorld(),
+		WorldPatrolPoint,
+		25.f,
+		12,
+		FColor::Red,
+		true);
+
+	EnemyControler->GetBlackboardComponent()->SetValueAsVector(TEXT("PatrolPoint"), WorldPatrolPoint);
 }
 
 void AEnemy::ShowHealthBar_Implementation()
