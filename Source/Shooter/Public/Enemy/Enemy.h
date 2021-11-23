@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 
 #include "BulletHitInterface.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
@@ -44,12 +45,24 @@ protected:
 
 	void UpdateHitNumbers();
 
+	/** AI Agro, Called when somehting overlaps with the agro sphere */
+	UFUNCTION()
+	void AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+
+	UFUNCTION(BlueprintCallable)
+	void SetStunned(bool Stunned);
+
 private:
-	/** Particles to spawn when his by bullets */
+	/** Particles to spawn when hit by bullets */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class UParticleSystem* ImpactParticles;
 
-	/** Sound to play when his by bullets */
+	/** Sound to play when hit by bullets */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class USoundCue* ImpactSound;
 
@@ -65,7 +78,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))	
 	FString HeadBone;
 
-	/** time to display health bar once shot */
+	/** Time to display health bar once shot */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float HealthBarDisplayTime;
 
@@ -108,7 +121,24 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
 	FVector PatrolPoint;
 
-	class AEnemyController* EnemyControler;
+	/** Point2 for the enemy to move to */
+	UPROPERTY(EditAnywhere, Category = "Behavior Tree", meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector PatrolPoint2;
+
+	class AEnemyController* EnemyController;
+
+	/** Overlap sphere for when the enemy becomes hostile */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class USphereComponent* AgroSphere;
+
+	/** True when playing the get hit animation */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	bool bStunned;
+
+	/** Chance of being stunned 0: 0% chance and 1: 100% chance*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float StunChance;
+	
 #pragma endregion AI
 public:	
 	// Called every frame

@@ -4,6 +4,7 @@
 #include "Enemy/Enemy.h"
 
 #include "DrawDebugHelpers.h"
+#include "ShooterCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Enemy/EnemyController.h"
@@ -19,24 +20,33 @@ HealthBarDisplayTime(4.f),
 HitReactTimeMin(0.5f),
 HitReactTimeMax(3.f),
 bCanHitReact(true),
-HitNumberDestroyTime(1.5f)
+HitNumberDestroyTime(1.5f),
+bStunned(false),
+StunChance(0.5)
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Create the Agro Sphere
+	AgroSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AgroSphere"));
+	AgroSphere->SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
+	//Overlap Delegate
+	AgroSphere->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::AgroSphereOverlap);
+	
+	
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
 	// Get the AI Controller
-	EnemyControler = Cast<AEnemyController>(GetController());
+	EnemyController = Cast<AEnemyController>(GetController());
 	
 	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint);
+	const FVector WorldPatrolPoint2 = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint2);
 	//Debughelpers:
 	DrawDebugSphere(GetWorld(),
 		WorldPatrolPoint,
@@ -44,8 +54,21 @@ void AEnemy::BeginPlay()
 		12,
 		FColor::Red,
 		true);
-
-	EnemyControler->GetBlackboardComponent()->SetValueAsVector(TEXT("PatrolPoint"), WorldPatrolPoint);
+	//Debughelpers:
+	DrawDebugSphere(GetWorld(),
+		WorldPatrolPoint2,
+		25.f,
+		12,
+		FColor::Red,
+		true);
+	if(EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("PatrolPoint"), WorldPatrolPoint);
+		EnemyController->GetBlackboardComponent()->SetValueAsVector(TEXT("PatrolPoint2"), WorldPatrolPoint2);
+		// Run BT
+		EnemyController->RunBehaviorTree(BehaviorTree);
+	}
+	
 }
 
 void AEnemy::ShowHealthBar_Implementation()
@@ -125,6 +148,32 @@ void AEnemy::UpdateHitNumbers()
 	}
 }
 
+void AEnemy::AgroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if(OtherActor == nullptr) return;
+	auto Character = Cast<AShooterCharacter>(OtherActor);
+	if (Character)
+	{
+		if(EnemyController)
+		{
+			// Set the value of the Target Blackboard Key
+			EnemyController->GetBlackboardComponent()->SetValueAsObject(TEXT("Target"), Character);
+		}
+		
+	}
+}
+
+void AEnemy::SetStunned(bool Stunned)
+{
+	bStunned = Stunned;
+
+	if(EnemyController)
+	{
+		EnemyController->GetBlackboardComponent()->SetValueAsBool(TEXT("Stunned"), Stunned);
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Called every frame
@@ -154,7 +203,17 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 
 	}
 	ShowHealthBar();
-	PlayHitMontage(FName("HitReactFront"));
+
+	// Determine whether bullet hit stuns /random value
+	const float Stunned = FMath::FRandRange(0.f, 1.f);
+	if(Stunned <= StunChance)
+	{
+		//Stun the Enemy
+		PlayHitMontage(FName("HitReactFront"));
+		SetStunned(true);
+	}
+	
+	
 }
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
