@@ -57,6 +57,52 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void SetStunned(bool Stunned);
 
+	// Callback func for CombatRangeSphere
+	UFUNCTION()
+	void CombatRangeOverlap(UPrimitiveComponent* OverlappedComponent,
+       	AActor* OtherActor,
+       	UPrimitiveComponent* OtherComp,
+       	int32 OtherBodyIndex,
+       	bool bFromSweep,
+       	const FHitResult& SweepResult);
+	UFUNCTION()
+	void CombatRangeEndOverlap(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayAttackMontage(FName Section, float PlayRate);
+
+	UFUNCTION(BlueprintPure)
+	FName GetAttackSectionName();
+
+	//Callbackfunctions:
+	UFUNCTION()
+	void OnLeftWeaponOverlap(UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnRightWeaponOverlap(UPrimitiveComponent* OverlappedComponent,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult& SweepResult);
+	// Activate /deactivate collision for weapon boxes
+	UFUNCTION(BlueprintCallable)
+	void ActivateLeftWeapon();
+	UFUNCTION(BlueprintCallable)
+	void DeactivateLeftWeapon();
+	UFUNCTION(BlueprintCallable)
+	void ActivateRightWeapon();
+	UFUNCTION(BlueprintCallable)
+	void DeactivateRightWeapon();
+
+	void DoDamage(AActor* Victim);
 private:
 	/** Particles to spawn when hit by bullets */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -138,8 +184,46 @@ private:
 	/** Chance of being stunned 0: 0% chance and 1: 100% chance*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float StunChance;
+
+	/** True when in attack range; time to attack! */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	bool bInAttackRange;
+
+	/** Sphere for attack range  */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	USphereComponent* CombatRangeSphere;
 	
 #pragma endregion AI
+#pragma region AttackMontage
+	/** Montage containing Different Attack animations */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* AttackMontage;
+
+	/** The four attack montage section names */
+	FName AttackLFast;
+	FName AttackRFast;
+	FName AttackL;
+	FName AttackR;
+
+	/** Collision volume for the left weapon */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* LeftWeaponCollision;
+	
+	/** Collision volume for the left weapon */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* RightWeaponCollision;
+	
+#pragma endregion AttackMontage
+#pragma region Damage
+
+	/** Base damage for enemy */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	float BaseDamage;
+
+
+	
+#pragma endregion Damage
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

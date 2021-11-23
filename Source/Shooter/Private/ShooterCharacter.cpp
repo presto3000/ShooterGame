@@ -83,7 +83,9 @@ bShouldPlayEquipSound(true),
 PickupSoundResetTime(0.2f),
 EquipSoundResetTime(0.2f),
 // Icon animation property
-HighlightedSlot(-1)
+HighlightedSlot(-1),
+Health(100.f),
+MaxHealth(100.f)
 
 
 {
@@ -137,6 +139,20 @@ HighlightedSlot(-1)
 	
 	InterpComp6 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 6"));
 	InterpComp6->SetupAttachment(GetFollowCamera());
+}
+
+float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	AActor* DamageCauser)
+{
+	if(Health - DamageAmount <= 0.f)
+	{
+		Health = 0.f;
+	}
+	else
+	{
+		Health -=DamageAmount;
+	}
+	return DamageAmount;
 }
 
 // Called when the game starts or when spawned
