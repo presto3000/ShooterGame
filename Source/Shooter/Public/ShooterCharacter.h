@@ -510,6 +510,14 @@ private:
 	/** Health Max Health */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float MaxHealth;
+
+	/** Sound made when Character gets hit by a melee attack */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USoundCue* MeleeImpactSound;
+
+	/** Blood splatter particles for melee hit */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* BloodParticles;
 	
 #pragma endregion Health
 public:
@@ -553,4 +561,6 @@ public:
 	void UnHighlightInventorySlot();
 
 	FORCEINLINE AWeapon* GetEquippedWeapon() const {return EquippedWeapon; }
+	FORCEINLINE USoundCue* GetMeleeImpactSound() const {return MeleeImpactSound; }
+	FORCEINLINE UParticleSystem* GetBloodParticles() const {return BloodParticles; }
 };

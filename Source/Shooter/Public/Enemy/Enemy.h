@@ -9,6 +9,7 @@
 #include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
+class AShooterCharacter;
 UCLASS()
 class SHOOTER_API AEnemy : public ACharacter, public IBulletHitInterface
 {
@@ -102,7 +103,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void DeactivateRightWeapon();
 
-	void DoDamage(AActor* Victim);
+	void DoDamage(AShooterCharacter* Victim);
+	void SpawnBlood(AShooterCharacter* Victim, FName SocketName);
 private:
 	/** Particles to spawn when hit by bullets */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -220,7 +222,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	float BaseDamage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	FName LeftWeaponSocket;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	FName RightWeaponSocket;
 	
 #pragma endregion Damage
 	
